@@ -244,3 +244,60 @@ new_df = listcol_df |>
   select(-samp) |>
   unnest(output)
 ```
+
+# Revisiting NSDUH
+
+``` r
+nsduh_table <- function(html, table_num) {
+  
+  table = 
+    html |> 
+    html_table() |> 
+    nth(table_num) |>
+    slice(-1) |> 
+    select(-contains("P Value")) |>
+    pivot_longer(
+      -State,
+      names_to = "age_year", 
+      values_to = "percent") |>
+    separate(age_year, into = c("age", "year"), sep = "\\(") |>
+    mutate(
+      year = str_replace(year, "\\)", ""),
+      percent = str_replace(percent, "[a-c]$", ""),
+      percent = as.numeric(percent)) |>
+    filter(!(State %in% c("Total U.S.", "Northeast", "Midwest", "South", "West")))
+  
+  table
+}
+
+nsduh_url = "http://samhda.s3-us-gov-west-1.amazonaws.com/s3fs-public/field-uploads/2k15StateFiles/NSDUHsaeShortTermCHG2015.htm"
+
+nsduh_html = read_html(nsduh_url)
+
+# Using for loop:
+
+output = vector("list", 3)
+
+for (i in c(1, 4, 5)) {
+  output[[i]] = nsduh_table(nsduh_html, i)
+}
+
+nsduh_results = bind_rows(output)
+
+# Using map:
+
+nsduh_results = 
+  map(c(1, 4, 5), nsduh_table, html = nsduh_html) |> 
+  bind_rows()
+
+# Using data frames and list columns:
+
+nsduh_results= 
+  tibble(
+    name = c("marj", "cocaine", "heroine"),
+    number = c(1, 4, 5)) |> 
+  mutate(table = map(number, \(num) nsduh_table(html = nsduh_html, num))) |> 
+  unnest(cols = "table")
+```
+
+# Operations on nested data
