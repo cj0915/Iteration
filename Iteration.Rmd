@@ -78,3 +78,49 @@ for (i in 1:4) {
 }
 ```
 
+# Use map to do the same thing
+
+```{r}
+output = map(list_norms, mean_and_sd)
+```
+
+Do other things
+
+```{r}
+output = map_dfr(list_norms, mean_and_sd)
+
+output = map(list_norms, IQR)
+```
+
+## LIST COLUMNS!!!
+
+```{r}
+listcol_df = 
+  tibble(
+    name = c("a", "b", "c", "d"),
+    samp = list_norms
+  )
+
+listcol_df
+
+mean_and_sd(listcol_df[["samp"]][["a"]])
+mean_and_sd(listcol_df[["samp"]][["b"]])
+mean_and_sd(listcol_df[["samp"]][["c"]])
+mean_and_sd(listcol_df[["samp"]][["d"]])
+
+map(listcol_df[["samp"]], mean_and_sd)
+```
+
+ADD A LIST COLUMN!!!
+
+```{r}
+new_df = listcol_df |>
+  mutate(output = map(samp, mean_and_sd),
+         iqr = map_dbl(samp, IQR))
+
+new_df = listcol_df |>
+  mutate(output = map(samp, mean_and_sd),
+         iqr = map_dbl(samp, IQR)) |>
+  select(-samp) |>
+  unnest(output)
+```

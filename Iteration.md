@@ -132,3 +132,115 @@ for (i in 1:4) {
   
 }
 ```
+
+# Use map to do the same thing
+
+``` r
+output = map(list_norms, mean_and_sd)
+```
+
+Do other things
+
+``` r
+output = map_dfr(list_norms, mean_and_sd)
+
+output = map(list_norms, IQR)
+```
+
+## LIST COLUMNS!!!
+
+``` r
+listcol_df = 
+  tibble(
+    name = c("a", "b", "c", "d"),
+    samp = list_norms
+  )
+
+listcol_df
+```
+
+    ## # A tibble: 4 × 2
+    ##   name  samp        
+    ##   <chr> <named list>
+    ## 1 a     <dbl [20]>  
+    ## 2 b     <dbl [20]>  
+    ## 3 c     <dbl [20]>  
+    ## 4 d     <dbl [20]>
+
+``` r
+mean_and_sd(listcol_df[["samp"]][["a"]])
+```
+
+    ## # A tibble: 1 × 2
+    ##     mean    sd
+    ##    <dbl> <dbl>
+    ## 1 -0.622  6.37
+
+``` r
+mean_and_sd(listcol_df[["samp"]][["b"]])
+```
+
+    ## # A tibble: 1 × 2
+    ##    mean    sd
+    ##   <dbl> <dbl>
+    ## 1  4.08  4.46
+
+``` r
+mean_and_sd(listcol_df[["samp"]][["c"]])
+```
+
+    ## # A tibble: 1 × 2
+    ##    mean    sd
+    ##   <dbl> <dbl>
+    ## 1 0.847  10.0
+
+``` r
+mean_and_sd(listcol_df[["samp"]][["d"]])
+```
+
+    ## # A tibble: 1 × 2
+    ##    mean    sd
+    ##   <dbl> <dbl>
+    ## 1 0.119  8.86
+
+``` r
+map(listcol_df[["samp"]], mean_and_sd)
+```
+
+    ## $a
+    ## # A tibble: 1 × 2
+    ##     mean    sd
+    ##    <dbl> <dbl>
+    ## 1 -0.622  6.37
+    ## 
+    ## $b
+    ## # A tibble: 1 × 2
+    ##    mean    sd
+    ##   <dbl> <dbl>
+    ## 1  4.08  4.46
+    ## 
+    ## $c
+    ## # A tibble: 1 × 2
+    ##    mean    sd
+    ##   <dbl> <dbl>
+    ## 1 0.847  10.0
+    ## 
+    ## $d
+    ## # A tibble: 1 × 2
+    ##    mean    sd
+    ##   <dbl> <dbl>
+    ## 1 0.119  8.86
+
+ADD A LIST COLUMN!!!
+
+``` r
+new_df = listcol_df |>
+  mutate(output = map(samp, mean_and_sd),
+         iqr = map_dbl(samp, IQR))
+
+new_df = listcol_df |>
+  mutate(output = map(samp, mean_and_sd),
+         iqr = map_dbl(samp, IQR)) |>
+  select(-samp) |>
+  unnest(output)
+```
