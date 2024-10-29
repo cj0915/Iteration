@@ -1,0 +1,80 @@
+---
+title: "Iteration and List Columns"
+author: "Chenyu Jin"
+date: "2024-10-24"
+output: github_document
+---
+
+```{r}
+library(tidyverse)
+library(rvest)
+set.seed(1)
+```
+
+Here are some lists:
+
+```{r}
+l = list(
+  vec_numeric = 1:4,
+  unif_sample =  runif(100),
+  mat         = matrix(1:8, nrow = 2, ncol = 4, byrow = TRUE),
+  summary     = summary(rnorm(1000)))
+
+l[["mat"]]
+```
+
+Make a useful list:
+
+```{r}
+list_norms = 
+  list(
+    a = rnorm(20, 0, 5),
+    b = rnorm(20, 4, 5),
+    c = rnorm(20, 0, 10),
+    d = rnorm(20, 4, 10)
+  )
+```
+
+Try the function I wrote last time:
+
+```{r}
+mean_and_sd = function(x) {
+  
+  if (!is.numeric(x)) {
+    stop("Argument x should be numeric")
+  } else if (length(x) == 1) {
+    stop("Cannot be computed for length 1 vectors")
+  }
+  
+  mean_x = mean(x)
+  sd_x = sd(x)
+
+  out_df = 
+    tibble(
+    mean = mean_x, 
+    sd = sd_x
+  )
+  
+  return(out_df)
+}
+```
+
+```{r}
+mean_and_sd(list_norms[["a"]])
+mean_and_sd(list_norms[["b"]])
+mean_and_sd(list_norms[["c"]])
+mean_and_sd(list_norms[["d"]])
+```
+
+# Use a for loop
+
+```{r}
+output = vector("list", length = 4)
+
+for (i in 1:4) {
+  
+  output[[i]] = mean_and_sd(list_norms[[i]])
+  
+}
+```
+
